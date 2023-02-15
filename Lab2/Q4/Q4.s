@@ -1,6 +1,5 @@
 		AREA RESET,DATA,READONLY
 		EXPORT __Vectors
-
 __Vectors
 		DCD 0x10001000
 		DCD Reset_Handler
@@ -8,27 +7,38 @@ __Vectors
 		AREA mycode,CODE,READONLY
 		ENTRY
 		EXPORT Reset_Handler
-
 Reset_Handler
-		LDR R0, =N1
-		LDR R1, =N2
-		LDR R2, =RES
-		MOV R3,#4
-		MOV R6, #0
-UP		LDR R4,[R0],#4
-		LDR R5,[R1],#4
-		SUBS R7,R4,R5
-		SBC R6,#0
-		CMP R6,#1
-		ADDS R7,R7,R5
-		ADC R6,#0
-		STR R7,[R2],#4
-		SUBS R3,#1
+		LDR R0,=N1
+		LDR R1,=N2
+		LDR R4,=DST
+		MOV R5,#4
+		LDR R6,=0xFFFFFFFF
+		MSR xPSR,R6
+		MOV R8,#0
+		LDR R2,[R0],#4
+		LDR R3,[R1],#4
+UP		SBCS R7,R2,R3
+		ADC R8,#0
+		STR R7,[R4],#4
+		LDR R2,[R0],#4
+		LDR R3,[R1],#4
+		CMP R8,#0
+		BEQ RST
+		SUBS R5,#1
+		MRS R9,xPSR
+		ORR R9,#0x20000000
+		MSR xPSR,R9
+		BNE UP
+		B STOP
+RST		SUBS R5,#1
+		MRS R9,xPSR
+		AND R9,#0xDFFFFFFF
+		MSR xPSR,R9
 		BNE UP
 STOP	
 		B STOP
-N1 DCD 6,2,3,2
-N2 DCD 4,3,2,1
+N1 DCD 4,3,2,1
+N2 DCD 1,2,3,4
 		AREA mydata,DATA,READWRITE
-RES DCD 0
+DST DCD 0
 		END
